@@ -6,9 +6,8 @@ import base64
 
 app = Flask(__name__)
 
-# İnstagram verilerine erişmek için giriş yapılması gerekiyorsa
+# Instaloader ile oturum açma
 insta = Instaloader()
-insta.login("walterw6770", "ycie8wmx6")
 
 @app.route("/")
 def index():
@@ -43,8 +42,7 @@ def profile():
 
             # HTML olarak parse ederek profil bilgilerini ve resmi göster
             html_content = f"""
-            <p>İnstagram bilgileiri</p>
-            <p>isim:{data['full_name']}</p>
+            <p>{data['full_name']}</p>
             <p>Kullanıcı Adı: {data['username']}</p>
             <p>Gönderi Sayısı: {data['post_count']}</p>
             <p>Takipçiler: {data['followers']}</p>
