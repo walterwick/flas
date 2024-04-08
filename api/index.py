@@ -1,8 +1,7 @@
-from flask import Flask, render_template, redirect, request, jsonify
+from flask import Flask, render_template, redirect, request, send_file, jsonify
 from io import BytesIO
 import requests
 from instaloader import instaloader
-import base64
 
 app = Flask(__name__)
 
@@ -34,28 +33,23 @@ def profile():
                 "full_name": profile.full_name,  # Might not always be available
             }
 
-            # Profil resmini Base64 formatına çevirerek HTML içinde görüntülemek için
-            response = requests.get(data["profile_pic_url"])
-            profile_pic_base64 = base64.b64encode(response.content).decode('utf-8')
-
-            # HTML olarak parse ederek profil bilgilerini ve resmi göster
-            html_content = f"""
-            <h1>{data['full_name']}</h1>
-            <p>Kullanıcı Adı: {data['username']}</p>
-            <p>Gönderi Sayısı: {data['post_count']}</p>
-            <p>Takipçiler: {data['followers']}</p>
-            <p>Takip Edilenler: {data['followees']}</p>
-            <p>Biyografi: {data['bio']}</p>
-            <img src="data:image/jpeg;base64,{profile_pic_base64}" alt="Profil Resmi">
-            """
-
-            return html_content
+            return jsonify(data)
 
         except Exception as e:
             # Handle errors gracefully
-            return f"Hata: {str(e)}"
+            return jsonify({"error": f"Hata: {str(e)}"})
     else:
-        return "Kullanıcı adı eksik."
+        return jsonify({"error": "Kullanıcı adı eksik."})
+
+@app.route("/profile_pic")
+def profile_pic():
+    profile_pic_url = request.args.get("profile_pic_url")
+
+    if profile_pic_url:
+        response = requests.get(profile_pic_url)
+        return send_file(BytesIO(response.content), mimetype=response.headers['Content-Type'])
+    else:
+        return "Profil resmi URL'si eksik."
 
 if __name__ == "__main__":
     app.run(debug=True)
