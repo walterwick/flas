@@ -42,12 +42,15 @@ def profile():
 
             # HTML olarak parse ederek profil bilgilerini ve resmi göster
             html_content = f"""
-            <p>{data['full_name']}</p>
-            <p>Kullanıcı Adı: {data['username']}</p>
+            <h1>Instagram Profil Bilgileri "{data['full_name']}"</h1>
+            <h2>Kullanıcı Adı: {data['username']}</h2>
+            <p>Tam Ad:{data['full_name']}</p>
             <p>Gönderi Sayısı: {data['post_count']}</p>
             <p>Takipçiler: {data['followers']}</p>
             <p>Takip Edilenler: {data['followees']}</p>
             <p>Biyografi: {data['bio']}</p>
+            <a href="{data['profile_pic_url']}">pfp</a>
+
             <img src="data:image/jpeg;base64,{profile_pic_base64}" alt="Profil Resmi">
             """
 
