@@ -1,9 +1,14 @@
-from flask import Flask, render_template, redirect, request, send_file, jsonify
+from flask import Flask, render_template, redirect, request, jsonify
 from io import BytesIO
 import requests
-from instaloader import instaloader
+from instaloader import Instaloader, Profile
+import base64
 
 app = Flask(__name__)
+
+# İnstagram verilerine erişmek için giriş yapılması gerekiyorsa
+insta = Instaloader()
+insta.login("walterw6770", "ycie8wmx6")
 
 @app.route("/")
 def index():
@@ -19,8 +24,7 @@ def profile():
 
     if username:
         try:
-            insta = instaloader.Instaloader()
-            profile = instaloader.Profile.from_username(insta.context, username)
+            profile = Profile.from_username(insta.context, username)
 
             # Profile information dictionary
             data = {
@@ -33,23 +37,29 @@ def profile():
                 "full_name": profile.full_name,  # Might not always be available
             }
 
-            return jsonify(data)
+            # Profil resmini Base64 formatına çevirerek HTML içinde görüntülemek için
+            response = requests.get(data["profile_pic_url"])
+            profile_pic_base64 = base64.b64encode(response.content).decode('utf-8')
+
+            # HTML olarak parse ederek profil bilgilerini ve resmi göster
+            html_content = f"""
+            <p>İnstagram bilgileiri</p>
+            <p>isim:{data['full_name']}</p>
+            <p>Kullanıcı Adı: {data['username']}</p>
+            <p>Gönderi Sayısı: {data['post_count']}</p>
+            <p>Takipçiler: {data['followers']}</p>
+            <p>Takip Edilenler: {data['followees']}</p>
+            <p>Biyografi: {data['bio']}</p>
+            <img src="data:image/jpeg;base64,{profile_pic_base64}" alt="Profil Resmi">
+            """
+
+            return html_content
 
         except Exception as e:
             # Handle errors gracefully
-            return jsonify({"error": f"Hata: {str(e)}"})
+            return f"Hata: {str(e)}"
     else:
-        return jsonify({"error": "Kullanıcı adı eksik."})
-
-@app.route("/profile_pic")
-def profile_pic():
-    profile_pic_url = request.args.get("profile_pic_url")
-
-    if profile_pic_url:
-        response = requests.get(profile_pic_url)
-        return send_file(BytesIO(response.content), mimetype=response.headers['Content-Type'])
-    else:
-        return "Profil resmi URL'si eksik."
+        return "Kullanıcı adı eksik."
 
 if __name__ == "__main__":
     app.run(debug=True)
