@@ -1,11 +1,14 @@
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, jsonify
+from io import BytesIO
+import requests
 from instaloader import instaloader
+import base64
 
 app = Flask(__name__)
 
 @app.route("/")
 def index():
-    # Yönlendirmeyi geçici olarak devre dışı bırakmak için yorum satırı ekleyinn
+    # Yönlendirmeyi geçici olarak devre dışı bırakmak için yorum satırı ekleyin
     # return render_template("index.html")
 
     # Kullanıcıyı doğrudan profile yönlendir
@@ -30,12 +33,29 @@ def profile():
                 "profile_pic_url": profile.profile_pic_url,
                 "full_name": profile.full_name,  # Might not always be available
             }
-            return render_template("profile.html", profile_data=data)
+
+            # Profil resmini Base64 formatına çevirerek HTML içinde görüntülemek için
+            response = requests.get(data["profile_pic_url"])
+            profile_pic_base64 = base64.b64encode(response.content).decode('utf-8')
+
+            # HTML olarak parse ederek profil bilgilerini ve resmi göster
+            html_content = f"""
+            <h1>{data['full_name']}</h1>
+            <p>Kullanıcı Adı: {data['username']}</p>
+            <p>Gönderi Sayısı: {data['post_count']}</p>
+            <p>Takipçiler: {data['followers']}</p>
+            <p>Takip Edilenler: {data['followees']}</p>
+            <p>Biyografi: {data['bio']}</p>
+            <img src="data:image/jpeg;base64,{profile_pic_base64}" alt="Profil Resmi">
+            """
+
+            return html_content
+
         except Exception as e:
             # Handle errors gracefully
-            return render_template("profile.html", message=f"Hata: {str(e)}")
+            return f"Hata: {str(e)}"
     else:
-        return render_template("index.html")
+        return "Kullanıcı adı eksik."
 
 if __name__ == "__main__":
     app.run(debug=True)
