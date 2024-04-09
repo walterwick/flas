@@ -1,17 +1,11 @@
-from flask import Flask, render_template, redirect, request, jsonify
-from io import BytesIO
-import requests
-from instaloader import Instaloader, Profile
-import base64
+from flask import Flask, render_template, redirect, request
+from instaloader import instaloader
 
 app = Flask(__name__)
 
-# Instaloader ile oturum açma
-insta = Instaloader()
-
 @app.route("/")
 def index():
-    # Yönlendirmeyi geçici olarak devre dışı bırakmak için yorum satırı ekleyin
+    # Yönlendirmeyi geçici olarak devre dışı bırakmak için yorum satırı ekleyinn
     # return render_template("index.html")
 
     # Kullanıcıyı doğrudan profile yönlendir
@@ -23,7 +17,8 @@ def profile():
 
     if username:
         try:
-            profile = Profile.from_username(insta.context, username)
+            insta = instaloader.Instaloader()
+            profile = instaloader.Profile.from_username(insta.context, username)
 
             # Profile information dictionary
             data = {
@@ -35,32 +30,12 @@ def profile():
                 "profile_pic_url": profile.profile_pic_url,
                 "full_name": profile.full_name,  # Might not always be available
             }
-
-            # Profil resmini Base64 formatına çevirerek HTML içinde görüntülemek için
-            response = requests.get(data["profile_pic_url"])
-            profile_pic_base64 = base64.b64encode(response.content).decode('utf-8')
-
-            # HTML olarak parse ederek profil bilgilerini ve resmi göster
-            html_content = f"""
-            <h1>Instagram Profil Bilgileri "{data['full_name']}"</h1>
-            <h2>Kullanıcı Adı: {data['username']}</h2>
-            <p>Tam Ad:{data['full_name']}</p>
-            <p>Gönderi Sayısı: {data['post_count']}</p>
-            <p>Takipçiler: {data['followers']}</p>
-            <p>Takip Edilenler: {data['followees']}</p>
-            <p>Biyografi: {data['bio']}</p>
-            <a href="{data['profile_pic_url']}">pfp</a>
-
-            <img src="data:image/jpeg;base64,{profile_pic_base64}" alt="Profil Resmi">
-            """
-
-            return html_content
-
+            return render_template("profile.html", profile_data=data)
         except Exception as e:
             # Handle errors gracefully
-            return f"Hata: {str(e)}"
+            return render_template("profile.html", message=f"Hata: {str(e)}")
     else:
-        return "Kullanıcı adı eksik."
+        return render_template("index.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
