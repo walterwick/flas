@@ -11,7 +11,7 @@ insta = Instaloader()
 
 @app.route("/")
 def index():
-    # Yönlendirmeyi geçici olarak devre dışı bırakmak için yorum satırı ekleyin
+    # Yönlendirmeyi geçici olarak devre dışı bırakmak için yorum satırı e4kleyin
     # return render_template("index.html")
 
     # Kullanıcıyı doğrudan profile yönlendir
