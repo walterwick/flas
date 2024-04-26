@@ -8,10 +8,11 @@ app = Flask(__name__)
 
 # Instaloader ile oturum açma
 insta = Instaloader()
+insta.login('walterw6770','ycie8wmx6')        # (login)
 
 @app.route("/")
 def index():
-    # Yönlendirmeyi geçici olarak devre dışı bırakmak için yorum satırı e4kleyin
+    # Yönlendirmeyi geçici olarak devre dışı bırakmak için yorum satırı ekleyin
     # return render_template("index.html")
 
     # Kullanıcıyı doğrudan profile yönlendir
@@ -42,6 +43,20 @@ def profile():
 
             # HTML olarak parse ederek profil bilgilerini ve resmi göster
             html_content = f"""
+            <!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram Profil Bilgileri</title>
+    <link rel="shortcut icon" href="data:image/jpeg;base64,{ profile_pic_base64 }" type="image/x-icon">
+
+</head>
+
+<body>
+
+  <div class="data">
             <h1>Instagram Profil Bilgileri '{data['full_name']}'</h1>
             <h2>Kullanıcı Adı: {data['username']}</h2>
             <p>Gönderi Sayısı: {data['post_count']}</p>
@@ -52,6 +67,18 @@ def profile():
             <a href="{data['profile_pic_url']}">pfp</a>
 
             <img src="data:image/jpeg;base64,{profile_pic_base64}" alt="Profil Resmi">
+             </div>
+
+  <style>
+    h1 {{
+      color: blue
+    }}
+  </style>
+
+</body>
+
+</html>
+
             """
 
             return html_content
