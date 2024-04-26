@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Instaloader ile oturum açma
 insta = Instaloader()
-insta.login('walterw6770','ycie8wmx6')        # (login)
+insta.login('emin411441','ycie8wmx6A.')        # (login)
 
 @app.route("/")
 def index():
