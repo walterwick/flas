@@ -1,93 +1,23 @@
-from flask import Flask, render_template, redirect, request, jsonify
-from io import BytesIO
+import time
 import requests
-from instaloader import Instaloader, Profile
-import base64
 
-app = Flask(__name__)
-
-# Instaloader ile oturum açma
-insta = Instaloader()
-insta.login('emin411441','ycie8wmx6A.')        # (login)
-
-@app.route("/")
-def index():
-    # Yönlendirmeyi geçici olarak devre dışı bırakmak için yorum satırı ekleyin
-    # return render_template("index.html")
-
-    # Kullanıcıyı doğrudan profile yönlendir
-    return redirect("/profile?username=emineey41")
-
-@app.route("/profile")
-def profile():
-    username = request.args.get("username")
-
-    if username:
+def run_cron_job():
+    url = "https://walterwick.de/api/cron"
+    
+    while True:
         try:
-            profile = Profile.from_username(insta.context, username)
-
-            # Profile information dictionary
-            data = {
-                "username": profile.username,
-                "post_count": profile.mediacount,
-                "followers": profile.followers,
-                "followees": profile.followees,
-                "bio": profile.biography,
-                "profile_pic_url": profile.profile_pic_url,
-                "full_name": profile.full_name,  # Might not always be available
-            }
-
-            # Profil resmini Base64 formatına çevirerek HTML içinde görüntülemek için
-            response = requests.get(data["profile_pic_url"])
-            profile_pic_base64 = base64.b64encode(response.content).decode('utf-8')
-
-            # HTML olarak parse ederek profil bilgilerini ve resmi göster
-            html_content = f"""
-            <!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instagram Profil Bilgileri</title>
-    <link rel="shortcut icon" href="data:image/jpeg;base64,{ profile_pic_base64 }" type="image/x-icon">
-
-</head>
-
-<body>
-
-  <div class="data">
-            <h1>Instagram Profil Bilgileri '{data['full_name']}'</h1>
-            <h2>Kullanıcı Adı: {data['username']}</h2>
-            <p>Gönderi Sayısı: {data['post_count']}</p>
-            <p>Takipçiler: {data['followers']}</p>
-            <p>Takip Edilenler: {data['followees']}</p>
-            <p>Biyografi: {data['bio']}</p>
-            <p>Tam Ad:{data['full_name']}</p>
-            <a href="{data['profile_pic_url']}">pfp</a>
-
-            <img src="data:image/jpeg;base64,{profile_pic_base64}" alt="Profil Resmi">
-             </div>
-
-  <style>
-    h1 {{
-      color: blue
-    }}
-  </style>
-
-</body>
-
-</html>
-
-            """
-
-            return html_content
-
+            # Send a GET request to the URL
+            response = requests.get(url)
+            
+            # Print the status code to check if the request was successful
+            print(f"Request sent. Status Code: {response.status_code}")
+        
         except Exception as e:
-            # Handle errors gracefully
-            return f"Hata: {str(e)}"
-    else:
-        return "Kullanıcı adı eksik & hatalı"
+            # Print any error if the request fails
+            print(f"Error occurred: {e}")
+        
+        # Wait for 60 minutes (3600 seconds) before running the job again
+        time.sleep(3600)
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000) #host paametresi diğer ip'lerden erişmek için
+    run_cron_job()
